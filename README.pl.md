@@ -153,12 +153,12 @@ Kod udostępniam do testów, wykorzystania we własnych projektach i ewentualnej
 
 ## Szybki start
 
-Gotowy firmware jest w [wydaniach na GitHubie](https://github.com/tjaworski997/whisli/releases/latest) — nie trzeba niczego kompilować. Każde wydanie ma dwa pliki:
+Gotowy firmware jest w [wydaniach na GitHubie](https://github.com/tjaworski997/whisli-hub/releases/latest) — nie trzeba niczego kompilować. Każde wydanie ma dwa pliki:
 
 | Plik | Do czego |
 |---|---|
-| [`firmware-full.bin`](https://github.com/tjaworski997/whisli/releases/latest/download/firmware-full.bin) | Pierwsze wgranie przez USB na czystą płytkę |
-| [`firmware.bin`](https://github.com/tjaworski997/whisli/releases/latest/download/firmware.bin) | Aktualizacja działającego sterownika przez panel |
+| [`firmware-full.bin`](https://github.com/tjaworski997/whisli-hub/releases/latest/download/firmware-full.bin) | Pierwsze wgranie przez USB na czystą płytkę |
+| [`firmware.bin`](https://github.com/tjaworski997/whisli-hub/releases/latest/download/firmware.bin) | Aktualizacja działającego sterownika przez panel |
 
 ### 1. Wgranie firmware
 
@@ -191,7 +191,7 @@ Zmień oba od razu: hasło panelu w **System → Ustawienia**, punkt dostępowy 
 
 ### 4. Konfiguracja
 
-W panelu: **Urządzenia** (moduły przekaźników, DMX) → **Światła** → **Strefy** → **Akcje** dla przycisków. Połączenie z Home Assistantem: **System → MQTT**.
+W panelu: **Urządzenia** (moduły przekaźników, moduły wejść, DMX) → **Światła** → **Strefy** → **Akcje** dla przycisków. Połączenie z Home Assistantem: **System → MQTT**.
 
 Kolejne wersje wgrywa się już bez USB: **System → Ustawienia → Aktualizacja firmware**, plik `firmware.bin`.
 
@@ -236,6 +236,42 @@ Co obsługuje dziś:
 
 Najważniejsza zasada: **przyciski i światła mają absolutny priorytet**; panel, API,
 OTA i integracje zawsze im ustępują.
+
+### Moduły wejść (Modbus)
+
+Przyciski nie muszą iść do 8 wejść DI płytki. Moduł Eletechsup N4DIH32 dodaje 32 wejścia
+i wisi na tej samej magistrali RS-485 co przekaźniki (Modbus RTU, 9600 8N1).
+
+1. Ustaw na module unikalny adres Modbus przełącznikami DIP A0–A5.
+2. Podłączenie sprawdzone na stanowisku testowym: **COM → +V** (5–30 V), każdy przycisk
+   między **wejściem X a minusem (GND)**. Sam przycisk między X a COM, bez niczego na COM,
+   nic nie da.
+3. W panelu: **Urządzenia → Moduły wejść → Eletechsup N4DIH32**, wpisz adres. Domyślne
+   wartości (32 wejścia, pierwszy rejestr `0x00C0`) pasują do N4DIH32.
+4. Nowe wejścia startują jako nieużywane: włącz i nazwij te, do których są podłączone
+   przyciski. Pojawią się wtedy w **Akcjach**, na mapie i w Home Assistancie, tak jak wejścia
+   płytki.
+
+Moduł jest odczytywany co ok. 25 ms (funkcja 03, 16 wejść na rejestr). Po 4 nieudanych
+odczytach jest oznaczany jako offline, jego wejścia są traktowane jako puszczone, a sterownik
+pyta go raz na sekundę, aż znowu odpowie. Zadanie sterowania nigdy nie czeka na magistralę —
+bierze tylko ostatni odczyt.
+
+Moduł spoza listy można sprawdzić pojedynczym zapytaniem odczytu, które zwraca surową
+odpowiedź w hex (przydaje się do znalezienia adresu i rejestrów):
+
+```sh
+curl -u whisli:<hasło> \
+  "http://<adres>/api/v1/devices/modbus/probe?address=2&function=3&start=192&count=2"
+```
+
+### Przechowywanie konfiguracji
+
+Konfiguracja (urządzenia, światła, akcje, strefy, presety, webhooki) jest zapisana w plikach
+na LittleFS. Każda wartość trafia najpierw do pliku tymczasowego, potem jest podmieniana, więc
+zanik zasilania zostawia starą wartość, a nie uszkodzoną. Zapis z panelu nigdy nie opóźnia
+przycisków: zmiana działa od razu w pamięci, a na flash trafia w tle. Sieć, MQTT i hasło
+panelu zostają w NVS.
 
 ### Układ kodu
 

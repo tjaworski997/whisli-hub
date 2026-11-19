@@ -155,12 +155,12 @@ I share the code for testing, for use in your own projects and for further devel
 
 ## Quick start
 
-Ready firmware is in the [GitHub releases](https://github.com/tjaworski997/whisli/releases/latest) — no need to compile anything. Each release has two files:
+Ready firmware is in the [GitHub releases](https://github.com/tjaworski997/whisli-hub/releases/latest) — no need to compile anything. Each release has two files:
 
 | File | For |
 |---|---|
-| [`firmware-full.bin`](https://github.com/tjaworski997/whisli/releases/latest/download/firmware-full.bin) | First flash over USB to a blank board |
-| [`firmware.bin`](https://github.com/tjaworski997/whisli/releases/latest/download/firmware.bin) | Updating a running controller from the panel |
+| [`firmware-full.bin`](https://github.com/tjaworski997/whisli-hub/releases/latest/download/firmware-full.bin) | First flash over USB to a blank board |
+| [`firmware.bin`](https://github.com/tjaworski997/whisli-hub/releases/latest/download/firmware.bin) | Updating a running controller from the panel |
 
 ### 1. Flashing the firmware
 
@@ -193,7 +193,7 @@ Change both right away: the panel password in **System → Settings**, the acces
 
 ### 4. Configuration
 
-In the panel: **Devices** (relay modules, DMX) → **Lights** → **Zones** → **Actions** for the buttons. Connection to Home Assistant: **System → MQTT**.
+In the panel: **Devices** (relay modules, input modules, DMX) → **Lights** → **Zones** → **Actions** for the buttons. Connection to Home Assistant: **System → MQTT**.
 
 Later versions are installed without USB: **System → Settings → Firmware update**, file `firmware.bin`.
 
@@ -238,6 +238,41 @@ What it supports today:
 
 The most important rule: **buttons and lights have absolute priority**; the panel, API,
 OTA and integrations always give way to them.
+
+### Input modules (Modbus)
+
+Buttons do not have to go to the board's 8 DIs. An Eletechsup N4DIH32 module adds 32 inputs
+and sits on the same RS-485 bus as the relays (Modbus RTU, 9600 8N1).
+
+1. Set a unique Modbus address on the module with the A0–A5 DIP switches.
+2. Wiring that works on the test bench: **COM → +V** (5–30 V), each button between
+   its **X input and minus (GND)**. A button between X and COM alone, with nothing on COM,
+   does nothing.
+3. In the panel: **Devices → Input modules → Eletechsup N4DIH32**, enter the address. The
+   defaults (32 inputs, first register `0x00C0`) fit the N4DIH32.
+4. New inputs start as unused: turn on and name the ones that have buttons. They then show up
+   in **Actions**, on the map and in Home Assistant, just like the board's inputs.
+
+The module is read every ~25 ms (function 03, 16 inputs per register). After 4 failed
+reads it is marked offline, its inputs count as released and it is polled once per second
+until it answers again. The control task never waits for the bus — it only takes the
+last reading.
+
+A module that is not on the list can be checked with a single read query that returns the
+raw answer in hex (handy for finding the address and registers):
+
+```sh
+curl -u whisli:<password> \
+  "http://<address>/api/v1/devices/modbus/probe?address=2&function=3&start=192&count=2"
+```
+
+### Configuration storage
+
+The configuration (devices, lights, actions, zones, presets, webhooks) is stored in files
+on LittleFS. Each value is written to a temporary file and then renamed, so a power cut
+leaves the old value instead of a broken one. Saving from the panel never delays the buttons:
+the change applies in memory right away and goes to flash in the background. Network, MQTT
+and the panel password stay in NVS.
 
 ### Code layout
 
