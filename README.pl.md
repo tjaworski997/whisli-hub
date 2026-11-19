@@ -98,15 +98,20 @@ Awaria Home Assistanta lub brokera MQTT nie blokuje lokalnego sterowania oświet
 
 Na obecnym etapie wykorzystuję gotowe moduły. Nie projektowałem własnego PCB.
 
-| Element | Zastosowanie |
-|---|---|
-| Waveshare ESP32-S3 PoE ETH 8DI/8DO | Sterownik główny |
-| Waveshare Modbus RTU 16CH Relay | Sterowanie obwodami ON/OFF |
-| Eletechsup N4DIH32 (32 DI, PNP, Modbus RTU) | Dodatkowe wejścia dla przycisków |
-| DMX512 D24 24CH | Sterowanie taśmami LED |
-| DMX512 S1-DR 2CH | Ściemnianie kompatybilnego oświetlenia 230 V |
-| Konwerter TTL ↔ RS485 | Interfejs magistrali |
-| Zasilacze 5 V / 24 V | Zasilanie elektroniki i LED |
+Obsługiwane i przetestowane dziś:
+
+| | Urządzenie | Zastosowanie |
+|---|---|---|
+| <img src="doc/devices/images/waveshare-esp32-s3-poe-eth-8di-8do-controller.png" alt="Waveshare ESP32-S3-POE-ETH-8DI-8DO" width="160"> | **Waveshare ESP32-S3-POE-ETH-8DI-8DO**<br>ESP32-S3, Ethernet + PoE, 8 wejść cyfrowych, 8 wyjść, RS-485 | Sterownik główny; wejścia i wyjścia płytki działają bez dodatkowych modułów |
+| <img src="doc/devices/images/waveshare-modbus-rtu-relay-16ch.png" alt="Waveshare Modbus RTU Relay 16CH" width="160"> | **Waveshare Modbus RTU Relay 16CH**<br>16 przekaźników, RS-485, Modbus RTU; obsługiwana też wersja 32CH | Sterowanie obwodami ON/OFF |
+| <img src="doc/devices/images/eletechsup-n4dih32-input-module.png" alt="Eletechsup N4DIH32" width="160"> | **Eletechsup N4DIH32**<br>32 wejścia cyfrowe (5–30 V), RS-485, Modbus RTU | Dodatkowe wejścia dla przycisków ściennych |
+| <img src="doc/devices/images/dmx512-d24-led-decoder.png" alt="Dekoder DMX512 D24" width="160"> | **DMX512 D24**<br>24-kanałowy dekoder DMX, 12–24 V | Sterowanie taśmami LED: ściemniane, CCT, RGB, RGBW |
+| <img src="doc/devices/images/skydance-dmx512-s1-dr-phase-dimmer.png" alt="Ściemniacz fazowy Skydance DMX512 S1-DR" width="160"> | **Skydance DMX512 S1-DR**<br>2-kanałowy ściemniacz fazowy 230 V | Ściemnianie kompatybilnego oświetlenia 230 V |
+| <img src="doc/devices/images/waveshare-ttl-to-rs485-b-converter.png" alt="Konwerter Waveshare TTL TO RS485 (B)" width="160"> | **Waveshare TTL TO RS485 (B)**<br>izolowany konwerter TTL ↔ RS-485 na szynę DIN | Wyjście linii DMX512 ze sterownika |
+| | **Zasilacze 5 V / 24 V** | Zasilanie elektroniki i LED |
+
+Inne moduły przekaźników Modbus RTU można dodać przez profil własny (standardowa mapa cewek),
+a inne dekodery i ściemniacze DMX512 powinny działać, o ile przyjmują standardowe kanały DMX.
 
 Konstrukcja pozwala rozbudowywać liczbę wejść i wyjść przez dodatkowe moduły. Konkretne limity zależą od konfiguracji magistral, firmware i użytego sprzętu.
 

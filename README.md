@@ -100,15 +100,20 @@ A Home Assistant or MQTT broker failure does not block local lighting control. T
 
 At this stage I use ready-made modules. I have not designed my own PCB.
 
-| Part | Used for |
-|---|---|
-| Waveshare ESP32-S3 PoE ETH 8DI/8DO | Main controller |
-| Waveshare Modbus RTU 16CH Relay | Switching ON/OFF circuits |
-| Eletechsup N4DIH32 (32 DI, PNP, Modbus RTU) | Extra inputs for buttons |
-| DMX512 D24 24CH | Driving LED strips |
-| DMX512 S1-DR 2CH | Dimming compatible 230 V lighting |
-| TTL ↔ RS485 converter | Bus interface |
-| 5 V / 24 V power supplies | Powering the electronics and LEDs |
+Supported and tested today:
+
+| | Device | Used for |
+|---|---|---|
+| <img src="doc/devices/images/waveshare-esp32-s3-poe-eth-8di-8do-controller.png" alt="Waveshare ESP32-S3-POE-ETH-8DI-8DO" width="160"> | **Waveshare ESP32-S3-POE-ETH-8DI-8DO**<br>ESP32-S3, Ethernet + PoE, 8 digital inputs, 8 outputs, RS-485 | Main controller; the board's inputs and outputs work without extra modules |
+| <img src="doc/devices/images/waveshare-modbus-rtu-relay-16ch.png" alt="Waveshare Modbus RTU Relay 16CH" width="160"> | **Waveshare Modbus RTU Relay 16CH**<br>16 relays, RS-485, Modbus RTU; the 32CH version is supported too | Switching ON/OFF circuits |
+| <img src="doc/devices/images/eletechsup-n4dih32-input-module.png" alt="Eletechsup N4DIH32" width="160"> | **Eletechsup N4DIH32**<br>32 digital inputs (5–30 V), RS-485, Modbus RTU | Extra inputs for wall buttons |
+| <img src="doc/devices/images/dmx512-d24-led-decoder.png" alt="DMX512 D24 LED decoder" width="160"> | **DMX512 D24**<br>24-channel DMX decoder, 12–24 V | Driving LED strips: dimmed, CCT, RGB, RGBW |
+| <img src="doc/devices/images/skydance-dmx512-s1-dr-phase-dimmer.png" alt="Skydance DMX512 S1-DR phase dimmer" width="160"> | **Skydance DMX512 S1-DR**<br>2-channel 230 V phase dimmer | Dimming compatible 230 V lighting |
+| <img src="doc/devices/images/waveshare-ttl-to-rs485-b-converter.png" alt="Waveshare TTL to RS485 (B) converter" width="160"> | **Waveshare TTL TO RS485 (B)**<br>isolated TTL ↔ RS-485 converter, DIN rail | DMX512 line output from the controller |
+| | **5 V / 24 V power supplies** | Powering the electronics and LEDs |
+
+Other Modbus RTU relay modules can be added with a custom profile (standard coil map), and other
+DMX512 decoders and dimmers should work as long as they take standard DMX channels.
 
 The design allows adding inputs and outputs with extra modules. The actual limits depend on the bus configuration, the firmware and the hardware used.
 
